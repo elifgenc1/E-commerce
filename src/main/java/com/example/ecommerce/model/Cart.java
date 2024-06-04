@@ -1,12 +1,17 @@
 package com.example.ecommerce.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
 @Setter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "cart")
 public class Cart extends BaseEntity {
 
@@ -17,4 +22,24 @@ public class Cart extends BaseEntity {
     @Column(name = "total_price")
     private double totalPrice;
 
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CartItem> cartItems = new ArrayList<>();
+
+    public void addCartItem(CartItem cartItem) {
+        cartItems.add(cartItem);
+        cartItem.setCart(this);
+        recalculateTotalPrice();
+    }
+
+    public void removeCartItem(CartItem cartItem) {
+        cartItems.remove(cartItem);
+        cartItem.setCart(null);
+        recalculateTotalPrice();
+    }
+
+    private void recalculateTotalPrice() {
+        totalPrice = cartItems.stream()
+                .mapToDouble(cartItem -> cartItem.getProduct().getPrice() * cartItem.getQuantity())
+                .sum();
+    }
 }
