@@ -1,7 +1,10 @@
 package com.example.ecommerce.controller;
 
-import com.example.ecommerce.model.Product;
+import com.example.ecommerce.dto.ProductDTO;
+import com.example.ecommerce.dto.request.CreateProductRequest;
+import com.example.ecommerce.dto.request.UpdateProductRequest;
 import com.example.ecommerce.service.ProductService;
+import org.apache.velocity.exception.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,37 +21,39 @@ public class ProductController {
         this.productService = productService;
     }
 
-    //ID'ye göre ürün bulma
     @GetMapping("/{id}")
-    public ResponseEntity<Product> getProduct(@PathVariable Long id) {
-        Product product = productService.getProduct(id);
-        if (product != null) {
+    public ResponseEntity<ProductDTO> getProduct(@PathVariable Long id) {
+        try {
+            ProductDTO product = productService.getProduct(id);
             return new ResponseEntity<>(product, HttpStatus.OK);
-        } else {
+        } catch (ResourceNotFoundException ex) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
-    //Bütün ürünleri bulma
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        List<Product> productList = productService.getAllProducts();
-
+    public ResponseEntity<List<ProductDTO>> getAllProducts() {
+        List<ProductDTO> productList = productService.getAllProducts();
         return new ResponseEntity<>(productList, HttpStatus.OK);
-
     }
 
-    //Ürün ekleme
-    @PostMapping("/add")
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
-        Product createdProduct = productService.createProduct(product);
-        return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
+    @PostMapping("/create")
+    public ResponseEntity<ProductDTO> createProduct(@RequestBody CreateProductRequest createProductRequest) {
+        try {
+            ProductDTO createdProduct = productService.createProduct(createProductRequest);
+            return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
+        } catch (Exception ex) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    //Ürün güncelleme
-    @PostMapping("/update/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product product) {
-        Product createdProduct = productService.updateProduct(id, product);
-        return new ResponseEntity<>(createdProduct, HttpStatus.CREATED);
+    @PutMapping("/update/{id}")
+    public ResponseEntity<ProductDTO> updateProduct(@PathVariable Long id, @RequestBody UpdateProductRequest updateProductRequest) {
+        try {
+            ProductDTO updatedProduct = productService.updateProduct(id, updateProductRequest);
+            return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
+        } catch (ResourceNotFoundException ex) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 }

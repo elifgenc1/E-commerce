@@ -30,10 +30,10 @@ abstract class BaseEntity {
 
     @Column(name = "deletion_time")
     private LocalDateTime deletionTime;
-
-    @PreRemove
-    public void preRemove() {
-        deletionTime = LocalDateTime.now();
+    public void softDelete() {
+        this.deleted = true;
+        this.deletionTime = LocalDateTime.now();
     }
+
 
 }

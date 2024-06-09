@@ -17,13 +17,11 @@ import lombok.*;
 @Table(name = "product_price_history")
 public class ProductPriceHistory extends BaseEntity {
 
-    private double oldPrice;
-
-    @Positive(message = "New price must be positive")
-    private double newPrice;
-
     @ManyToOne
     @JoinColumn(name = "product_id", referencedColumnName = "id")
     Product product;
+    private double oldPrice;
+    @Positive(message = "New price must be positive")
+    private double newPrice;
 
 }

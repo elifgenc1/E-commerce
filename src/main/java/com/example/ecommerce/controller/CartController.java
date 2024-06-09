@@ -1,8 +1,12 @@
 package com.example.ecommerce.controller;
 
 import com.example.ecommerce.dto.CartDTO;
+import com.example.ecommerce.dto.request.AddProductToCartRequest;
+import com.example.ecommerce.dto.request.RemoveProductFromCartRequest;
 import com.example.ecommerce.model.Cart;
 import com.example.ecommerce.service.CartService;
+import jakarta.validation.Valid;
+import org.apache.velocity.exception.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,14 +31,31 @@ public class CartController {
     }
 
     @PostMapping("/addProductToCart")
-    public ResponseEntity<Cart> addProductFromCart(@RequestBody CartDTO cartDTO) {
-        Cart createdCart = cartService.addProductToCart(cartDTO.getCustomerId(), cartDTO.getProductId(), cartDTO.getQuantity());
-        return new ResponseEntity<>(createdCart, HttpStatus.CREATED);
+    public ResponseEntity<CartDTO> addProductToCart(@RequestBody AddProductToCartRequest request) {
+        try {
+            CartDTO updatedCart = cartService.addProductToCart(request);
+            return new ResponseEntity<>(updatedCart, HttpStatus.CREATED);
+        } catch (Exception ex) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    @PostMapping("/removeProductFromCart")
-    public ResponseEntity<Cart> removeProductFromCart(@RequestBody CartDTO cartDTO) {
-        Cart deletedProduct = cartService.removeProductFromCart(cartDTO.getCustomerId(), cartDTO.getProductId(), cartDTO.getQuantity());
-        return new ResponseEntity<>(deletedProduct, HttpStatus.OK);
+    @DeleteMapping("/empty/{customerId}")
+    public ResponseEntity<Void> emptyCart(@PathVariable Long customerId) {
+        cartService.emptyCart(customerId);
+        return ResponseEntity.noContent().build(); // 204 No Content
+    }
+    @DeleteMapping("/removeProductFromCart")
+    public ResponseEntity<CartDTO> removeProductFromCart(@Valid @RequestBody RemoveProductFromCartRequest request) {
+        try {
+            CartDTO updatedCart = cartService.removeProductFromCart(request);
+            return new ResponseEntity<>(updatedCart, HttpStatus.OK);
+        } catch (ResourceNotFoundException ex) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (IllegalArgumentException ex) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (Exception ex) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

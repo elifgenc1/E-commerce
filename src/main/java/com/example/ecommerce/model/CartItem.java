@@ -10,10 +10,10 @@ import lombok.*;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "product_cart")
+@Table(name = "cart_items")
 public class CartItem extends BaseEntity {
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
 
@@ -23,6 +23,6 @@ public class CartItem extends BaseEntity {
 
     @Column(name = "quantity")
     @Min(value = 1, message = "Quantity must be at least 1")
-    private int quantity;
+    private double quantity;
 
 }
